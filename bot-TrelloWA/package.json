@@ -1,0 +1,73 @@
+{
+  "name": "bot-trellowa",
+  "version": "3.0.0",
+  "description": "Bot para integração WhatsApp com Trello usando Evolution API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "pm2": "pm2 start index.js --name bot-trello",
+    "pm2-stop": "pm2 stop bot-trello",
+    "pm2-restart": "pm2 restart bot-trello",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "setup-data": "node scripts/setup-data.js",
+    "pretest": "npm run setup-data"
+  },
+  "keywords": [],
+  "author": "Abraao Dev",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
+    "axios": "^1.16.1",
+    "date-fns": "^4.4.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "googleapis": "^173.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "fast-check": "^4.8.0",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "dotenv/config"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/__tests__/setup.js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "!index.js",
+      "!**/node_modules/**",
+      "!**/data/**",
+      "!**/__tests__/**",
+      "!scripts/**"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/data/",
+      "/scripts/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    }
+  }
+}

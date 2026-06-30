@@ -1,0 +1,43 @@
+{
+  "validMessages": [
+    {
+      "description": "Complete order message",
+      "text": "👤 Cliente: João Silva\n⏰ Entrega: hoje 15:30\nProduto: Camiseta personalizada",
+      "expectedCardName": "João Silva",
+      "expectedDueHour": 15,
+      "expectedDueMinute": 30
+    },
+    {
+      "description": "Order with tomorrow delivery",
+      "text": "👤 Cliente: Maria Santos\n⏰ Entrega: amanhã 14:00",
+      "expectedCardName": "Maria Santos",
+      "expectedDueDay": "tomorrow"
+    },
+    {
+      "description": "Order with laser service",
+      "text": "👤 Cliente: Carlos Lima\n⏰ Entrega: sexta 18:00\nPedido de gravação a laser",
+      "expectedCardName": "Carlos Lima",
+      "shouldAddLaserMember": true
+    },
+    {
+      "description": "Order with silk service",
+      "text": "👤 Cliente: Ana Paula\n⏰ Entrega: segunda 10:00\nSerigrafia silk",
+      "expectedCardName": "Ana Paula",
+      "shouldAddSilkMember": true
+    }
+  ],
+  "invalidMessages": [
+    {
+      "description": "Message without client indicator",
+      "text": "Quanto custa uma camiseta?"
+    },
+    {
+      "description": "Empty message",
+      "text": ""
+    },
+    {
+      "description": "Just X to finish",
+      "text": "X"
+    }
+  ]
+}

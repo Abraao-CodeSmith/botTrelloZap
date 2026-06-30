@@ -1,0 +1,163 @@
+{
+  "createCard": {
+    "success": {
+      "id": "658d913eb379bcf13f13e1ac",
+      "name": "Pedido - João Silva",
+      "desc": "👤 Cliente: João Silva\n⏰ Entrega: hoje 15:30\nProduto: Camiseta personalizada",
+      "due": "2024-12-25T18:30:00.000Z",
+      "idList": "682e37657cb05c0db6e299e7",
+      "idMembers": ["6474a39ac9b837a8a8f3c0a0", "62c6e0864d06867e435a62bb"],
+      "url": "https://trello.com/c/abc123",
+      "dateLastActivity": "2024-12-25T10:30:00.000Z"
+    },
+    "error": {
+      "status": 400,
+      "message": "Invalid list ID"
+    },
+    "rateLimit": {
+      "status": 429,
+      "message": "Rate limit exceeded"
+    }
+  },
+  
+  "getCards": {
+    "unordered": [
+      {
+        "id": "card1",
+        "name": "Pedido A",
+        "due": "2024-12-30T18:00:00.000Z",
+        "idList": "list123",
+        "pos": 3
+      },
+      {
+        "id": "card2",
+        "name": "Pedido B",
+        "due": "2024-12-20T18:00:00.000Z",
+        "idList": "list123",
+        "pos": 1
+      },
+      {
+        "id": "card3",
+        "name": "Pedido C",
+        "due": "2024-12-25T18:00:00.000Z",
+        "idList": "list123",
+        "pos": 2
+      }
+    ],
+    "ordered": [
+      {
+        "id": "card2",
+        "name": "Pedido B",
+        "due": "2024-12-20T18:00:00.000Z",
+        "pos": 1
+      },
+      {
+        "id": "card3",
+        "name": "Pedido C",
+        "due": "2024-12-25T18:00:00.000Z",
+        "pos": 2
+      },
+      {
+        "id": "card1",
+        "name": "Pedido A",
+        "due": "2024-12-30T18:00:00.000Z",
+        "pos": 3
+      }
+    ]
+  },
+  
+  "attachFile": {
+    "success": {
+      "id": "att123",
+      "name": "imagem_produto.jpg",
+      "url": "https://trello.com/attachments/..."
+    },
+    "error": {
+      "status": 404,
+      "message": "Card not found"
+    }
+  },
+  
+  "webhook": {
+    "createCard": {
+      "action": {
+        "id": "action123",
+        "idMemberCreator": "member123",
+        "data": {
+          "card": {
+            "id": "card123",
+            "name": "Novo Pedido"
+          },
+          "list": {
+            "id": "list123",
+            "name": "Pendentes"
+          }
+        },
+        "type": "createCard",
+        "date": "2024-12-25T10:30:00.000Z",
+        "memberCreator": {
+          "id": "member123",
+          "fullName": "João Silva"
+        }
+      }
+    },
+    "updateCard": {
+      "action": {
+        "id": "action456",
+        "idMemberCreator": "member456",
+        "data": {
+          "card": {
+            "id": "card123",
+            "name": "Pedido Atualizado"
+          },
+          "listBefore": {
+            "id": "list123",
+            "name": "Pendentes"
+          },
+          "listAfter": {
+            "id": "list456",
+            "name": "Em Andamento"
+          }
+        },
+        "type": "updateCard",
+        "date": "2024-12-25T11:00:00.000Z",
+        "memberCreator": {
+          "id": "member456",
+          "fullName": "Maria Santos"
+        }
+      }
+    },
+    "commentCard": {
+      "action": {
+        "id": "action789",
+        "idMemberCreator": "member789",
+        "data": {
+          "card": {
+            "id": "card123",
+            "name": "Pedido Comentado"
+          },
+          "text": "Cliente pediu alteração na cor"
+        },
+        "type": "commentCard",
+        "date": "2024-12-25T11:30:00.000Z",
+        "memberCreator": {
+          "id": "member789",
+          "fullName": "Carlos Lima"
+        }
+      }
+    }
+  },
+  
+  "members": {
+    "padrao": ["6474a39ac9b837a8a8f3c0a0", "62c6e0864d06867e435a62bb"],
+    "laser": "620492af71195d62930c3547",
+    "silk": "6363ad7ac3400b1d43ec58d6",
+    "monitorado": "6474a39ac9b837a8a8f3c0a0"
+  },
+  
+  "lists": {
+    "pedidos": "682e37657cb05c0db6e299e7",
+    "andamento": "682e37657cb05c0db6e299e8",
+    "concluido": "682e37657cb05c0db6e299e9"
+  }
+}
