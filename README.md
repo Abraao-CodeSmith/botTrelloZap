@@ -146,7 +146,7 @@ Como o bot utiliza escuta por **Webhooks** da Evolution API, ele deve ser implan
    git add .
    git commit -m "feat: setup para deploy"
    git branch -M main
-   git remote add origin git@github.com:seu-usuario/seu-repositorio.git
+   git remote add origin git@github.com:Abraao-CodeSmith/botTrelloZap.git
    git push -u origin main
    ```
 2. Crie um **Web Service** no Render, selecionando o repositório criado.
