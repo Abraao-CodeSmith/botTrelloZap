@@ -12,6 +12,8 @@
 # Build / Compiled output
 # -----------------------------------------------------
 **/dist/
+!evolution-api/manager/dist/
+!evolution-api/manager/dist/**
 **/coverage/
 
 # -----------------------------------------------------
