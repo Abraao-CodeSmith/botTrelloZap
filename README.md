@@ -11,11 +11,11 @@ flowchart TD
     WA[WhatsApp / Grupo] -- Webhook/Mensagem --> Bot[Bot Express API]
     Bot -- 👤 Cliente... --> Trello[Trello API: Criar Card]
     Bot -- Imagem/PDF --> TM[Validador de Tamanho]
-    TM -- <= 10MB --> TrelloAttach[Trello API: Anexar Mídia]
+    TM -- até 10MB --> TrelloAttach[Trello API: Anexar Mídia]
     TM -- > 10MB --> Reject[Rejeita & Loga]
     Gmail[Gmail Service] -- Monitora Caixa --> Bot
     Bot -- Alerta de Novo Email --> WA
-    Bot <=> Supabase[(Supabase DB)]
+    Bot <--> Supabase[(Supabase DB)]
 ```
 
 ---
