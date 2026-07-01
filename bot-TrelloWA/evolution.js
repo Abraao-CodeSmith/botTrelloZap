@@ -27,10 +27,11 @@ async function checkConnection() {
 
 async function setupWebhook() {
     try {
-        const webhookUrl = `http://localhost:${process.env.PORT || 3000}/webhook/evolution`;
+        const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 3000}`;
+        const webhookUrl = `${baseUrl}/webhook/evolution`;
 
         console.log(`🔗 Registrando webhook na Evolution API...`);
-        console.log(`   URL: ${webhookUrl}`);
+        console.log(`   URL registrada: ${webhookUrl}`);
 
         const response = await axios.post(`${EVOLUTION_API_URL}/webhook/set/${INSTANCE_NAME}`, {
             webhook: {
