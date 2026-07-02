@@ -5,6 +5,7 @@
   "main": "./dist/main.js",
   "type": "commonjs",
   "scripts": {
+    "render:start": "npm run db:deploy && node dist/main.js",
     "build": "tsc --noEmit && tsup",
     "start": "node dist/main.js",
     "start:prod": "node dist/main",
