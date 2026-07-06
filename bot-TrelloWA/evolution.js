@@ -10,7 +10,11 @@ const INSTANCE_NAME = process.env.EVOLUTION_INSTANCE_NAME;
 
 async function checkConnection() {
     try {
-        const response = await axios.get(`${EVOLUTION_API_URL}/instance/connectionState/${INSTANCE_NAME}`, {
+        const baseUrl = EVOLUTION_API_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/instance/connectionState/${INSTANCE_NAME}`;
+        console.log(`🔌 Verificando conexão: GET ${url}`);
+
+        const response = await axios.get(url, {
             headers: { 'apikey': EVOLUTION_API_KEY }
         });
 
@@ -195,7 +199,7 @@ async function downloadMedia(message) {
             message: message,
             convertToMp4: false
         }, {
-            headers: { 
+            headers: {
                 'apikey': EVOLUTION_API_KEY,
                 'Content-Type': 'application/json'
             }

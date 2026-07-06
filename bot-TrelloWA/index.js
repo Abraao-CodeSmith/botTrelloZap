@@ -91,13 +91,13 @@ async function handleMessage(msg, groupConfig) {
 
             mensagensCache.add(msgId);
             const supabase = getSupabase();
-            supabase.from('processed_messages').insert([{ message_id: msgId }]).then();
+            supabase.from('processed_messages').insert([{ message_id: msgId }]).then().catch(err => console.error('Erro no Supabase (Mensagens):', err.message));
 
             // IMPORTANTE: Salvar sessão ativa EXATAMENTE com o autor da mensagem
             activeSessions.set(author, card.id);
             console.log(`   🔐 Sessão ativa criada para: ${author} -> Card: ${card.id}`);
 
-            supabase.from('active_sessions').upsert([{ author_phone: author, trello_card_id: card.id }]).then();
+            supabase.from('active_sessions').upsert([{ author_phone: author, trello_card_id: card.id }]).then().catch(err => console.error('Erro no Supabase (Sessões):', err.message));
 
             // ✅ NÃO ENVIAR MENSAGEM PARA O WHATSAPP - SÓ LOG NO TERMINAL
             console.log('✅ Cartão pronto para receber anexos (imagens/documentos)');
@@ -211,7 +211,7 @@ async function handleMessage(msg, groupConfig) {
 
         const cardId = activeSessions.get(author);
         activeSessions.delete(author);
-        getSupabase().from('active_sessions').delete().eq('author_phone', author).then();
+        getSupabase().from('active_sessions').delete().eq('author_phone', author).then().catch(err => console.error('Erro no Supabase (Deletar Sessões):', err.message));
 
         trelloApi.debouncedOrder(groupConfig.idListaTrello);
 
@@ -282,8 +282,8 @@ app.use((err, req, res, next) => {
 
 // ===== INÍCIO DO BOT =====
 async function main() {
-    if (!process.env.EVOLUTION_API_URL || !process.env.EVOLUTION_API_KEY || !process.env.TRELLO_KEY || !process.env.TRELLO_TOKEN) {
-        console.error('❌ Variáveis de ambiente críticas ausentes');
+    if (!process.env.EVOLUTION_API_URL || !process.env.EVOLUTION_API_KEY || !process.env.TRELLO_KEY || !process.env.TRELLO_TOKEN || !process.env.EVOLUTION_INSTANCE_NAME) {
+        console.error('❌ Variáveis de ambiente críticas ausentes (Verifique EVOLUTION_INSTANCE_NAME)');
         process.exit(1);
     }
 
