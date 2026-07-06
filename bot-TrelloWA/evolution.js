@@ -4,14 +4,13 @@ const express = require('express');
 let isConnected = false;
 let messageHandler = null;
 
-const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL;
+const EVOLUTION_API_URL = (process.env.EVOLUTION_API_URL || '').replace(/\/$/, '');
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY;
 const INSTANCE_NAME = process.env.EVOLUTION_INSTANCE_NAME;
 
 async function checkConnection() {
     try {
-        const baseUrl = EVOLUTION_API_URL.replace(/\/$/, '');
-        const url = `${baseUrl}/instance/connectionState/${INSTANCE_NAME}`;
+        const url = `${EVOLUTION_API_URL}/instance/connectionState/${INSTANCE_NAME}`;
         console.log(`🔌 Verificando conexão: GET ${url}`);
 
         const response = await axios.get(url, {
