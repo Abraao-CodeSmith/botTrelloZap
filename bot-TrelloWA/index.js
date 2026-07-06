@@ -303,14 +303,13 @@ async function main() {
 
     // Inicializar Evolution API
     const initialized = await evolutionApi.initialize(handleMessage);
-
     if (!initialized) {
         console.error('❌ Falha ao inicializar Evolution API');
         console.log('Verifique se:');
         console.log('1. Evolution API está rodando em:', process.env.EVOLUTION_API_URL);
         console.log('2. API_KEY está correta');
         console.log('3. Instância existe e está conectada');
-        process.exit(1);
+        console.warn('⚠️ O servidor continuará rodando para manter a porta aberta no Render, mas a integração do WhatsApp não funcionará até ser consertada.');
     }
 
     // Inicializar serviço de email
