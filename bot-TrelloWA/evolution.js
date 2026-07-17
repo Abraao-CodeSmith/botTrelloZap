@@ -4,13 +4,14 @@ const express = require('express');
 let isConnected = false;
 let messageHandler = null;
 
-const EVOLUTION_API_URL = (process.env.EVOLUTION_API_URL || '').replace(/\/$/, '');
+const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL;
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY;
 const INSTANCE_NAME = process.env.EVOLUTION_INSTANCE_NAME;
 
 async function checkConnection() {
     try {
-        const url = `${EVOLUTION_API_URL}/instance/connectionState/${INSTANCE_NAME}`;
+        const baseUrl = EVOLUTION_API_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/instance/connectionState/${INSTANCE_NAME}`;
         console.log(`🔌 Verificando conexão: GET ${url}`);
 
         const response = await axios.get(url, {
@@ -263,14 +264,12 @@ async function syncGroups() {
     }
 }
 
+let activeGroupsConfig = {};
+function setMonitoredGroups(configs) {
+    activeGroupsConfig = configs;
+}
 function getMonitoredGroups() {
-    try {
-        const parsed = JSON.parse(process.env.GROUP_CONFIGS_JSON || '{}');
-        return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch (error) {
-        console.error('Erro ao parsear GROUP_CONFIGS_JSON');
-        return {};
-    }
+    return activeGroupsConfig;
 }
 
 function shutdown() {
@@ -283,6 +282,7 @@ module.exports = {
     sendMessage,
     downloadMedia,
     syncGroups,
+    setMonitoredGroups,
     getMonitoredGroups,
     getWebhookRouter,
     shutdown,

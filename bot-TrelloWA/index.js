@@ -17,6 +17,20 @@ const activeSessions = new Map();
 async function carregarEstadoDoSupabase() {
     try {
         const supabase = getSupabase();
+        // 1. CARREGAR GRUPOS DIRETAMENTE DO BANCO E INJETAR
+        const { data: dbGroups, error: grpErr } = await supabase.from('group_configs').select('*').eq('ativo', true);
+        if (dbGroups) {
+            dbGroups.forEach(g => {
+                groups[g.group_id] = {
+                    nomeIdentificador: g.nome_identificador,
+                    idListaTrello: g.trello_list_id,
+                    membrosPadrao: g.default_members || [],
+                    idMembroMonitorado: g.monitored_member_id
+                };
+            });
+            evolutionApi.setMonitoredGroups(groups);
+            console.log(`☁️ Supabase: Carregados ${Object.keys(groups).length} grupos de monitoramento.`);
+        } else if (grpErr) console.error('❌ Erro ao buscar grupos no BD:', grpErr.message);
 
         // Carregar mensagens (limite de 2000 mais recentes)
         const { data: msgs } = await supabase.from('processed_messages')
@@ -39,7 +53,7 @@ async function carregarEstadoDoSupabase() {
 }
 
 // ===== CONFIGURAÇÕES DOS GRUPOS =====
-const groups = evolutionApi.getMonitoredGroups();
+let groups = {};
 
 // ===== HANDLER DE MENSAGENS =====
 async function handleMessage(msg, groupConfig) {
@@ -91,13 +105,19 @@ async function handleMessage(msg, groupConfig) {
 
             mensagensCache.add(msgId);
             const supabase = getSupabase();
-            supabase.from('processed_messages').insert([{ message_id: msgId }]).then().catch(err => console.error('Erro no Supabase (Mensagens):', err.message));
+            supabase.from('processed_messages').insert([{ message_id: msgId }]).then().catch(err => console.error('Erro ao salvar processed_messages no Supabase:', err.message));
+
+            const whatsappGroupId = msg.key?.remoteJid;
+            supabase.from('bot_card_links').insert([{
+                card_id: card.id,
+                group_id: whatsappGroupId
+            }]).then().catch(err => console.error('⚠️ [BD] Erro ao vincular bot_card_links:', err.message));
 
             // IMPORTANTE: Salvar sessão ativa EXATAMENTE com o autor da mensagem
             activeSessions.set(author, card.id);
             console.log(`   🔐 Sessão ativa criada para: ${author} -> Card: ${card.id}`);
 
-            supabase.from('active_sessions').upsert([{ author_phone: author, trello_card_id: card.id }]).then().catch(err => console.error('Erro no Supabase (Sessões):', err.message));
+            supabase.from('active_sessions').upsert([{ author_phone: author, trello_card_id: card.id }]).then().catch(err => console.error('Erro ao salvar active_sessions no Supabase:', err.message));
 
             // ✅ NÃO ENVIAR MENSAGEM PARA O WHATSAPP - SÓ LOG NO TERMINAL
             console.log('✅ Cartão pronto para receber anexos (imagens/documentos)');
@@ -211,7 +231,7 @@ async function handleMessage(msg, groupConfig) {
 
         const cardId = activeSessions.get(author);
         activeSessions.delete(author);
-        getSupabase().from('active_sessions').delete().eq('author_phone', author).then().catch(err => console.error('Erro no Supabase (Deletar Sessões):', err.message));
+        getSupabase().from('active_sessions').delete().eq('author_phone', author).then().catch(err => console.error('Erro ao deletar sessão no Supabase:', err.message));
 
         trelloApi.debouncedOrder(groupConfig.idListaTrello);
 
@@ -257,13 +277,53 @@ app.get('/status', (req, res) => {
     });
 });
 
+// ======= WEBHOOK DO TRELLO COM REGRAS E ALERTAS DE WHATSAPP =======
 app.post('/webhook/trello', async (req, res) => {
-    const action = req.body.action;
-    if (!action) return res.sendStatus(200);
-
-    console.log('📨 Webhook do Trello:', action.type, action.data?.card?.name);
-
+    // 1. Responder OK imeadiatamente para o Trello não repetir a chamada
     res.sendStatus(200);
+
+    const action = req.body.action;
+    if (!action || !action.data?.card) return;
+    const cardId = action.data.card.id;
+    const cardName = action.data.card.name;
+    const memberCreator = action.memberCreator?.fullName || 'Alguém';
+
+    let mensagem = null;
+    // Ação: Mover cartão
+    if (action.type === 'updateCard' && action.data.listAfter && action.data.listBefore) {
+        mensagem = `🔄 *Aviso Trello:* \nO pedido *"${cardName}"* foi movido da lista _${action.data.listBefore.name}_ para _${action.data.listAfter.name}_ por ${memberCreator}.`;
+    }
+
+    // Ação: Comentário Novo
+    else if (action.type === 'commentCard') {
+        const commentText = action.data.text;
+        mensagem = `💬 *Novo Comentário:* \n${memberCreator} comentou no pedido *"${cardName}"*:\n_"${commentText}"_`;
+    }
+    // Ação: Alteração na Data de Entrega (Apenas se o old.due tiver conteúdo)
+    else if (action.type === 'updateCard' && action.data.card.due && action.data.old && action.data.old.due) {
+        const dataObjeto = new Date(action.data.card.due);
+        const dataFormatada = dataObjeto.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
+        mensagem = `📅 *Prazo Alterado:* \nA nova data de entrega do pedido *"${cardName}"* agora é _${dataFormatada}_ (Modificado por ${memberCreator}).`;
+    }
+    // Identificamos um evento válido? Procurar o zap dono.
+    if (mensagem) {
+        try {
+            const supabase = getSupabase();
+            const { data: vinculo } = await supabase
+                .from('bot_card_links')
+                .select('group_id')
+                .eq('card_id', cardId)
+                .single(); // Procuramos apenas 1 resultado
+            if (vinculo && vinculo.group_id) {
+                console.log(`📤 Enviando alerta de "${action.type}" para WhatsApp. Cartão: ${cardName}`);
+                await evolutionApi.sendMessage(vinculo.group_id, mensagem);
+            } else {
+                console.log(`⚠️ Alerta (ID ${cardId}) ignorado: Cartão não foi criado pelo bot ou não possui vínculo em bot_card_links.`);
+            }
+        } catch (error) {
+            console.error('❌ Erro no disparo do Webhook -> Zap:', error.message);
+        }
+    }
 });
 
 // Middleware Global de Tratamento de Erros (Captura Erro 413 do bodyParser)
@@ -283,7 +343,7 @@ app.use((err, req, res, next) => {
 // ===== INÍCIO DO BOT =====
 async function main() {
     if (!process.env.EVOLUTION_API_URL || !process.env.EVOLUTION_API_KEY || !process.env.TRELLO_KEY || !process.env.TRELLO_TOKEN || !process.env.EVOLUTION_INSTANCE_NAME) {
-        console.error('❌ Variáveis de ambiente críticas ausentes (Verifique EVOLUTION_INSTANCE_NAME)');
+        console.error('❌ Variáveis de ambiente críticas ausentes (Verifique também EVOLUTION_INSTANCE_NAME)');
         process.exit(1);
     }
 
@@ -303,6 +363,7 @@ async function main() {
 
     // Inicializar Evolution API
     const initialized = await evolutionApi.initialize(handleMessage);
+
     if (!initialized) {
         console.error('❌ Falha ao inicializar Evolution API');
         console.log('Verifique se:');
